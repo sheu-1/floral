@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { Calendar, MapPin, Phone, MessageSquare, CreditCard, Lock } from 'lucide-react'
 import { useCart } from '@/lib/store/cart'
 import { useAuth } from '@/lib/providers/AuthProvider'
-import { stripePromise } from '@/lib/stripe'
+import { initializePaystackPayment } from '@/lib/paystack'
 import { CheckoutData } from '@/lib/types/database'
 
 export default function CheckoutPage() {
@@ -47,8 +47,8 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
-      // Create checkout session
-      const response = await fetch('/api/checkout', {
+      // Create order in database first
+      const orderResponse = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,25 +57,29 @@ export default function CheckoutPage() {
           items,
           checkoutData,
           userId: user.id,
+          total: getTotalPrice(),
         }),
       })
 
-      const { sessionId, error } = await response.json()
+      const { orderId, error: orderError } = await orderResponse.json()
 
-      if (error) {
-        throw new Error(error)
+      if (orderError) {
+        throw new Error(orderError)
       }
 
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise
-      if (stripe) {
-        const { error: stripeError } = await stripe.redirectToCheckout({
-          sessionId,
-        })
+      // Initialize Paystack payment
+      const paymentData = await initializePaystackPayment(
+        user.email!,
+        getTotalPrice(),
+        orderId,
+        `${window.location.origin}/checkout/success`
+      )
 
-        if (stripeError) {
-          throw new Error(stripeError.message)
-        }
+      if (paymentData.status && paymentData.data?.authorization_url) {
+        // Redirect to Paystack checkout
+        window.location.href = paymentData.data.authorization_url
+      } else {
+        throw new Error('Failed to initialize payment')
       }
     } catch (error) {
       console.error('Checkout error:', error)
@@ -214,7 +218,7 @@ export default function CheckoutPage() {
 
                 <div className="flex items-center justify-center text-sm text-neutral-600">
                   <Lock className="w-4 h-4 mr-2" />
-                  Secure checkout powered by Stripe
+                  Secure checkout powered by Paystack
                 </div>
               </form>
             </div>

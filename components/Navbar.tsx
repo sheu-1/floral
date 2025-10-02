@@ -22,11 +22,13 @@ const navigation = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const pathname = usePathname()
   const { getTotalItems, toggleCart } = useCart()
   const { user, signOut } = useAuth()
 
   useEffect(() => {
+    setIsMounted(true)
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
     }
@@ -37,6 +39,13 @@ export function Navbar() {
   const handleSignOut = async () => {
     await signOut()
     setIsOpen(false)
+    // Redirect to home page after sign out
+    window.location.href = '/'
+  }
+
+  const handleSearch = () => {
+    // Navigate to services page with search functionality
+    window.location.href = '/services'
   }
 
   return (
@@ -80,9 +89,13 @@ export function Navbar() {
             {/* Actions */}
             <div className="flex items-center space-x-4">
               {/* Search */}
-              <button className={`p-2 rounded-full transition-colors duration-200 hover:bg-primary-100 ${
-                isScrolled ? 'text-neutral-700' : 'text-white'
-              }`}>
+              <button 
+                onClick={handleSearch}
+                className={`p-2 rounded-full transition-colors duration-200 hover:bg-primary-100 ${
+                  isScrolled ? 'text-neutral-700' : 'text-white'
+                }`}
+                aria-label="Search services"
+              >
                 <Search className="w-5 h-5" />
               </button>
 
@@ -106,7 +119,7 @@ export function Navbar() {
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
-                {getTotalItems() > 0 && (
+                {isMounted && getTotalItems() > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {getTotalItems()}
                   </span>

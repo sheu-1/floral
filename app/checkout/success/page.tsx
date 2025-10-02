@@ -6,24 +6,79 @@ import { motion } from 'framer-motion'
 import { CheckCircle, Calendar, Mail, Phone } from 'lucide-react'
 import Link from 'next/link'
 import { useCart } from '@/lib/store/cart'
+import { verifyPaystackPayment } from '@/lib/paystack'
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { clearCart } = useCart()
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [paymentReference, setPaymentReference] = useState<string | null>(null)
+  const [verifying, setVerifying] = useState(true)
+  const [verificationError, setVerificationError] = useState<string | null>(null)
 
   useEffect(() => {
-    const sessionIdParam = searchParams.get('session_id')
-    if (sessionIdParam) {
-      setSessionId(sessionIdParam)
-      // Clear the cart after successful payment
-      clearCart()
+    const reference = searchParams.get('reference')
+    const trxref = searchParams.get('trxref')
+    
+    // Paystack returns reference or trxref parameter
+    const paymentRef = reference || trxref
+    
+    if (paymentRef) {
+      setPaymentReference(paymentRef)
+      verifyPayment(paymentRef)
     } else {
-      // Redirect to home if no session ID
+      // Redirect to home if no payment reference
       router.push('/')
     }
-  }, [searchParams, clearCart, router])
+  }, [searchParams, router])
+
+  const verifyPayment = async (reference: string) => {
+    try {
+      setVerifying(true)
+      const result = await verifyPaystackPayment(reference)
+      
+      if (result.success) {
+        // Payment verified successfully
+        clearCart()
+        setVerifying(false)
+      } else {
+        throw new Error('Payment verification failed')
+      }
+    } catch (error) {
+      console.error('Payment verification error:', error)
+      setVerificationError('Failed to verify payment. Please contact support.')
+      setVerifying(false)
+    }
+  }
+
+  if (verifying) {
+    return (
+      <div className="min-h-screen pt-20 bg-gradient-floral flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">Verifying Payment...</h2>
+          <p className="text-neutral-600">Please wait while we confirm your payment.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (verificationError) {
+    return (
+      <div className="min-h-screen pt-20 bg-gradient-floral">
+        <div className="container-max section-padding">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-red-600 text-2xl">⚠️</span>
+            </div>
+            <h1 className="font-serif text-3xl font-bold text-neutral-900 mb-4">Payment Verification Failed</h1>
+            <p className="text-lg text-neutral-600 mb-8">{verificationError}</p>
+            <Link href="/contact" className="btn-primary">Contact Support</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen pt-20 bg-gradient-floral">
@@ -124,12 +179,12 @@ export default function CheckoutSuccessPage() {
 
             <p className="text-sm text-neutral-600">
               Need help? Contact us at{' '}
-              <a href="mailto:hello@shillahflowers.com" className="text-primary-600 hover:underline">
-                hello@shillahflowers.com
+              <a href="mailto:shillahjuma1@gmail.com" className="text-primary-600 hover:underline">
+                shillahjuma1@gmail.com
               </a>{' '}
               or{' '}
-              <a href="tel:+15551234567" className="text-primary-600 hover:underline">
-                (555) 123-4567
+              <a href="tel:+254112013474" className="text-primary-600 hover:underline">
+                +254 112 013474
               </a>
             </p>
           </motion.div>

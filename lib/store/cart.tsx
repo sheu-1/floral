@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { CartItem, Service } from '@/lib/types/database'
-import { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react'
 
 interface CartStore {
   items: CartItem[]
@@ -79,9 +79,28 @@ const CartContext = createContext<CartStore | null>(null)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const store = useCartStore()
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    // Ensure hydration is complete before rendering cart-dependent components
+    setIsHydrated(true)
+  }, [])
+
+  // Provide a stable store reference that doesn't change during hydration
+  const stableStore = isHydrated ? store : {
+    items: [],
+    isOpen: false,
+    addItem: () => {},
+    removeItem: () => {},
+    updateQuantity: () => {},
+    clearCart: () => {},
+    toggleCart: () => {},
+    getTotalItems: () => 0,
+    getTotalPrice: () => 0,
+  }
   
   return (
-    <CartContext.Provider value={store}>
+    <CartContext.Provider value={stableStore}>
       {children}
     </CartContext.Provider>
   )

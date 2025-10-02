@@ -42,7 +42,7 @@ CREATE TABLE orders (
     venue_address TEXT,
     venue_contact VARCHAR(20),
     special_instructions TEXT,
-    stripe_payment_intent_id VARCHAR(200),
+    paystack_reference VARCHAR(200),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

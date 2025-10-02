@@ -23,8 +23,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
+    setIsHydrated(true)
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -121,10 +124,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const value = {
-    user,
-    profile,
-    session,
-    loading,
+    user: isHydrated ? user : null,
+    profile: isHydrated ? profile : null,
+    session: isHydrated ? session : null,
+    loading: isHydrated ? loading : true,
     signIn,
     signUp,
     signOut,

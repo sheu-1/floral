@@ -34,7 +34,7 @@ A modern, responsive e-commerce website for flowers & event decoration services 
 - **Frontend**: Next.js 14, React 18, TypeScript
 - **Styling**: Tailwind CSS, Framer Motion
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
-- **Payments**: Stripe
+- **Payments**: Paystack
 - **State Management**: Zustand
 - **Icons**: Lucide React
 - **Deployment**: Vercel (Frontend), Supabase (Backend)
@@ -44,7 +44,7 @@ A modern, responsive e-commerce website for flowers & event decoration services 
 ### Prerequisites
 - Node.js 18+ and npm
 - Supabase account
-- Stripe account
+- Paystack account
 
 ### 1. Clone the Repository
 ```bash
@@ -76,11 +76,11 @@ npm install
    supabase db push
    ```
 
-### 4. Set Up Stripe
+### 4. Set Up Paystack
 
-1. Create a Stripe account at [stripe.com](https://stripe.com)
-2. Get your publishable and secret keys from the Stripe dashboard
-3. Set up webhooks (see Webhook Setup section below)
+1. Create a Paystack account at [paystack.com](https://paystack.com)
+2. Get your publishable and secret keys from the Paystack dashboard
+3. Configure your webhook URL for payment verification
 
 ### 5. Environment Variables
 
@@ -92,10 +92,9 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-# Stripe Configuration
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+# Paystack Configuration
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your_paystack_public_key
+PAYSTACK_SECRET_KEY=your_paystack_secret_key
 
 # App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
